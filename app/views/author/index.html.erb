@@ -4,6 +4,8 @@
   <%= link_to "Stats", stats_index_path %>
 </nav>
 
+<%= will_paginate @authors %>
+
 <div class="author">
   <% @authors.each do |author| %>
 
@@ -14,3 +16,5 @@
 
   <% end %>
 </div>
+
+<%= will_paginate @authors %>

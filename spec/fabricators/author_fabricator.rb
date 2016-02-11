@@ -1,4 +1,4 @@
 Fabricator(:author) do
   name { Faker::Name.name }
-  articles(count: rand(3))
+  articles(count: 1)
 end
