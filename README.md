@@ -40,7 +40,7 @@ Rendered stats/index.html.erb within layouts/application (9.9ms)
 Completed 200 OK in 16197ms (Views: 38.0ms | ActiveRecord: 4389.4ms)
 ```
 
-It took 16 seconds to load and a lot of the time taken isn't even in the ActiveRecord querying or the view. It's the creation of ruby objects that is taking a lot of time. This will be explained in further detail below.
+It took 16 seconds to load and a lot of the time taken isn't even in the ActiveRecord querying or the view (those add to like 1/3rd of the total time). It's the creation of ruby objects that is taking a lot of time. This will be explained in further detail below.
 
 So, **What can we do?**
 
@@ -49,20 +49,19 @@ Well, let's focus on improving time it takes for the view to load and the AR que
 Complete this tutorial first:
 [Jumpstart Lab Tutorial on Querying](http://tutorials.jumpstartlab.com/topics/performance/queries.html)
 
-# Requirements for this checkpoint
-* add an index to the correct columns
-* implement eager loading vs lazy loading on the right pages.
-* replace Ruby lookups with ActiveRecord methods.
-* fix html_safe issue.
-* page cache or fragment cache the root page.
-* No need for testing, but you need to get the time down to a reasonable time for both pages.
-* The root page needs to implement includes, pagination, and fragment caching.
+# Things we will do today!
+* Add an index to the correct columns
+* Implement eager loading vs lazy loading on the right pages.
+* Replace Ruby lookups with ActiveRecord methods.
+* Fix html_safe issue.
+* Page cache or fragment cache the root page.
+* The root page needs to implement eager loading, pagination, and fragment caching.
 
 ##### Index some columns. But what should we index?
 
 [great explanation of how to index columns and when](http://tutorials.jumpstartlab.com/topics/performance/queries.html#indices)
 
-Our non-performant app has many opportunities to index. Just look at our associations. There are many foreign keys in our database...
+Our non-performant app has a few columns where indexing would give us a clear performance benefit. How do we know this? Well, the associations between articles and authors, and authors and comments implies that lookups will occur in our application between articles and authors, and authors and comments. Those lookups will rely on the author_id and comment_id columns which are the foreign keys. Let's think about indexing those foreign keys.
 
 ```ruby
 class Article < ActiveRecord::Base
@@ -72,6 +71,8 @@ end
 ```
 
 ##### Ruby vs ActiveRecord
+
+One of the reasons why the time for a view to render is longer than the sum of its ActiveRecord and view creation parts is due to Ruby object creation. Let's take a look at this problem.
 
 Let's try to get some ids from our Article model.
 
@@ -83,7 +84,9 @@ puts Benchmark.measure {Article.select(:id).collect{|a| a.id}}
   0.020000   0.000000   0.020000 (  0.021821)
 ```
 
-The real time is 0.021821 for the Ruby query.
+Note that the Article.select(:id) is an AR method that retrieves only the :id field and returns an AR Relation object but the collect/map is a Ruby method that creates an enumerator. The time jump when you create the enumerator is large. That object creation is costly in terms of time.
+
+The real time is 0.027821 for the Ruby query.
 
 vs ActiveRecord
 
@@ -92,7 +95,7 @@ puts Benchmark.measure {Article.pluck(:id)}
    (3.2ms)  SELECT "articles"."id" FROM "articles"
   0.000000   0.000000   0.000000 (  0.006992)
 ```
-The real time is 0.006992 for the AR query. Ruby is about 300% slower.
+The real time is 0.006992 for the pure AR query. The Ruby query is about 300%+ slower.
 
 For example, this code is terribly written in the Author model:
 
@@ -110,7 +113,7 @@ def self.with_most_upvoted_article
 end
 ```
 
-Both methods use Ruby methods (sort_by) instead of ActiveRecord. Let's fix that.
+Both methods use Ruby methods (sort_by) which leads to Ruby object creation instead of most time efficient ActiveRecord queries. Let's fix that!
 
 ##### html_safe makes it unsafe or safe?.
 
