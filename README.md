@@ -1,24 +1,37 @@
-# Andela Rails Checkpoint #3
+# Worst performing app ever. Let's learn how to fix this mess.
 
 1. Git clone this app and follow the instructions below.
 
 ```bash
-git clone git@github.com:andela/checkpoint_rails_worst_app.git
+git clone git@github.com:Jwan622/worst_app_tutorial.git
+```
+### This is a tutorial on performance optimizations in caching, ActiveRecord querying,
+
+So, first step is to run bundler and download all the necessary gems and its dependencies.
+
+```
+bundle install
 ```
 
-### This is one of the worst performing Rails apps ever.
+and then run this app locally:
+
+```
+rails server
+```
+
+Let's visit our homepage at localhost.
 
 Currently, the home page takes this long to load:
 
 ```bash
-...
+...(there are a ton of database queries above this)... like a few thousand NBD)
 Article Load (0.5ms)  SELECT "articles".* FROM "articles" WHERE "articles"."author_id" = ?  [["author_id", 3000]]
 Article Load (0.5ms)  SELECT "articles".* FROM "articles" WHERE "articles"."author_id" = ?  [["author_id", 3001]]
 Rendered author/index.html.erb within layouts/application (9615.5ms)
 Completed 200 OK in 9793ms (Views: 7236.5ms | ActiveRecord: 2550.1ms)
 ```
 
-The view takes 7.2 seconds to load. The AR querying takes 2.5 second to load. The page takes close to 10 seconds to load. That's not great at all. That's just awful.
+The view takes 7.2 seconds to load. The AR querying takes 2.5 second to load. The page takes close to 10 seconds to load. That's not great at all... in fact, that's just awful.
 
 The stats page is even worse:
 
@@ -31,7 +44,7 @@ It took 16 seconds to load and a lot of the time taken isn't even in the ActiveR
 
 So, **What can we do?**
 
-Well, let's focus on improving the view and the AR querying first!
+Well, let's focus on improving time it takes for the view to load and the AR querying first!
 
 Complete this tutorial first:
 [Jumpstart Lab Tutorial on Querying](http://tutorials.jumpstartlab.com/topics/performance/queries.html)

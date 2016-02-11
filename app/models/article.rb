@@ -10,7 +10,7 @@ class Article < ActiveRecord::Base
 
   def self.five_longest_article_names
     all.sort_by do |art|
-      art.name
+      art.name.length
     end.last(5).map do |art|
       art.name
     end

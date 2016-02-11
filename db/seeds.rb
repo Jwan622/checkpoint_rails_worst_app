@@ -8,3 +8,5 @@ author1.articles << Article.create(name: "5 upvoted article",
 author1.articles << Article.create(name: "1 upvoted article",
                                   body: "this article has 1 upvote",
                                   upvotes: 1)
+
+# This will make jeff (author) the most prolific writer with 3 articles.
